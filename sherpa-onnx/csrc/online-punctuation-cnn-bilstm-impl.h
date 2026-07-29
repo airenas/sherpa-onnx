@@ -251,6 +251,16 @@ class OnlinePunctuationCNNBiLSTMImpl : public OnlinePunctuationImpl {
           suffix = "?";
           break;
         }
+        case 4:  // colon
+        {
+          suffix = ":";
+          break;
+        }
+        case 5:  // dash
+        {
+          suffix = " -";
+          break;
+        }
         default:
           break;
       }
