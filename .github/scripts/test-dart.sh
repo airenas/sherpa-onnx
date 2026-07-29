@@ -4,31 +4,20 @@ set -ex
 
 cd dart-api-examples
 
-pushd speech-enhancement-gtcrn
-echo "speech enhancement with gtcrn models"
+echo '----------Version----------'
+pushd version
 ./run.sh
-ls -lh
-popd
-
-pushd speech-enhancement-dpdfnet
-echo "speech enhancement with dpdfnet models"
-./run.sh
-ls -lh
-popd
-
-pushd streaming-speech-enhancement-gtcrn
-echo "streaming speech enhancement with gtcrn models"
-./run.sh
-ls -lh
-popd
-
-pushd streaming-speech-enhancement-dpdfnet
-echo "streaming speech enhancement with dpdfnet models"
-./run.sh
-ls -lh
 popd
 
 pushd non-streaming-asr
+
+echo '----------Cohere Transcribe----------'
+./run-cohere-transcribe.sh
+rm -rf sherpa-onnx-*
+
+echo '----------Qwen3 ASR----------'
+./run-qwen3-asr.sh
+rm -rf sherpa-onnx-*
 
 echo '----------Moonshine v2----------'
 ./run-moonshine-v2.sh
@@ -107,6 +96,30 @@ echo '----------VAD with paraformer----------'
 rm -rf sherpa-onnx-*
 
 popd # non-streaming-asr
+
+pushd speech-enhancement-gtcrn
+echo "speech enhancement with gtcrn models"
+./run.sh
+ls -lh
+popd
+
+pushd speech-enhancement-dpdfnet
+echo "speech enhancement with dpdfnet models"
+./run.sh
+ls -lh
+popd
+
+pushd streaming-speech-enhancement-gtcrn
+echo "streaming speech enhancement with gtcrn models"
+./run.sh
+ls -lh
+popd
+
+pushd streaming-speech-enhancement-dpdfnet
+echo "streaming speech enhancement with dpdfnet models"
+./run.sh
+ls -lh
+popd
 
 pushd tts
 
@@ -193,6 +206,9 @@ popd
 pushd add-punctuations
 echo '----------CT Transformer----------'
 ./run-ct-transformer.sh
+echo '----------Online punctuation----------'
+./run-online.sh
+rm -rf sherpa-onnx-online-punct-en-2024-08-06
 popd
 
 pushd audio-tagging

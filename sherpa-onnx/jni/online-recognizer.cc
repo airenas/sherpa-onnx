@@ -31,6 +31,20 @@ OnlineModelConfig GetOnlineModelConfig(JNIEnv *env, jclass model_config_cls,
   SHERPA_ONNX_JNI_READ_STRING(ans.transducer.joiner, joiner,
                               transducer_config_cls, transducer_config);
 
+  fid = env->GetFieldID(transducer_config_cls, "qnnConfig",
+                        "Lcom/k2fsa/sherpa/onnx/QnnConfig;");
+  jobject qnn_config = env->GetObjectField(transducer_config, fid);
+  jclass qnn_config_cls = env->GetObjectClass(qnn_config);
+
+  SHERPA_ONNX_JNI_READ_STRING(ans.transducer.qnn_config.backend_lib, backendLib,
+                              qnn_config_cls, qnn_config);
+
+  SHERPA_ONNX_JNI_READ_STRING(ans.transducer.qnn_config.context_binary,
+                              contextBinary, qnn_config_cls, qnn_config);
+
+  SHERPA_ONNX_JNI_READ_STRING(ans.transducer.qnn_config.system_lib, systemLib,
+                              qnn_config_cls, qnn_config);
+
   fid = env->GetFieldID(model_config_cls, "paraformer",
                         "Lcom/k2fsa/sherpa/onnx/OnlineParaformerModelConfig;");
   jobject paraformer_config = env->GetObjectField(model_config, fid);
@@ -301,6 +315,16 @@ JNIEXPORT jlong JNICALL Java_com_k2fsa_sherpa_onnx_OnlineRecognizer_newFromFile(
 }
 
 SHERPA_ONNX_EXTERN_C
+JNIEXPORT void JNICALL
+Java_com_k2fsa_sherpa_onnx_OnlineRecognizer_prependAdspLibraryPath(
+    JNIEnv *env, jclass /*cls*/, jstring new_path) {
+  const char *p = env->GetStringUTFChars(new_path, nullptr);
+  sherpa_onnx::PrependAdspLibraryPath(p);
+
+  env->ReleaseStringUTFChars(new_path, p);
+}
+
+SHERPA_ONNX_EXTERN_C
 JNIEXPORT void JNICALL Java_com_k2fsa_sherpa_onnx_OnlineRecognizer_delete(
     JNIEnv * /*env*/, jobject /*obj*/, jlong ptr) {
   delete reinterpret_cast<sherpa_onnx::OnlineRecognizer *>(ptr);
@@ -407,7 +431,7 @@ JNIEXPORT jobject JNICALL Java_com_k2fsa_sherpa_onnx_OnlineRecognizer_getResult(
       cls, "<init>", "(Ljava/lang/String;[Ljava/lang/String;[F[F)V");
 
   // text
-  jstring text = env->NewStringUTF(result.text.c_str());
+  jstring text = SafeNewStringUTF(env, result.text);
 
   // tokens
   jclass string_cls = env->FindClass("java/lang/String");
@@ -415,7 +439,7 @@ JNIEXPORT jobject JNICALL Java_com_k2fsa_sherpa_onnx_OnlineRecognizer_getResult(
       env->NewObjectArray(result.tokens.size(), string_cls, nullptr);
   env->DeleteLocalRef(string_cls);
   for (size_t i = 0; i < result.tokens.size(); ++i) {
-    jstring token_str = env->NewStringUTF(result.tokens[i].c_str());
+    jstring token_str = SafeNewStringUTF(env, result.tokens[i]);
     env->SetObjectArrayElement(tokens, i, token_str);
     env->DeleteLocalRef(token_str);
   }

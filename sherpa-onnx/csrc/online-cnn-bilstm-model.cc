@@ -3,6 +3,8 @@
 // Copyright (c) 2024 Jian You (jianyou@cisco.com, Cisco Systems)
 
 #include "sherpa-onnx/csrc/online-cnn-bilstm-model.h"
+#include "sherpa-onnx/csrc/ort-env.h"
+#include "sherpa-onnx/csrc/macros.h"
 
 #include <memory>
 #include <string>
@@ -29,17 +31,18 @@ class OnlineCNNBiLSTMModel::Impl {
  public:
   explicit Impl(const OnlinePunctuationModelConfig &config)
       : config_(config),
-        env_(ORT_LOGGING_LEVEL_ERROR),
+        env_(CreateOrtEnv()),
         sess_opts_(GetSessionOptions(config)),
         allocator_{} {
-    auto buf = ReadFile(config_.cnn_bilstm);
-    Init(buf.data(), buf.size());
+    sess_ = std::make_unique<Ort::Session>(
+        env_, SHERPA_ONNX_TO_ORT_PATH(config_.cnn_bilstm), sess_opts_);
+    Init(nullptr, 0);
   }
 
   template <typename Manager>
   Impl(Manager *mgr, const OnlinePunctuationModelConfig &config)
       : config_(config),
-        env_(ORT_LOGGING_LEVEL_ERROR),
+        env_(CreateOrtEnv()),
         sess_opts_(GetSessionOptions(config)),
         allocator_{} {
     auto buf = ReadFile(mgr, config_.cnn_bilstm);
@@ -66,8 +69,15 @@ class OnlineCNNBiLSTMModel::Impl {
 
  private:
   void Init(void *model_data, size_t model_data_length) {
-    sess_ = std::make_unique<Ort::Session>(env_, model_data, model_data_length,
-                                           sess_opts_);
+    if (model_data) {
+      sess_ = std::make_unique<Ort::Session>(
+          env_, model_data, model_data_length, sess_opts_);
+    } else if (!sess_) {
+      SHERPA_ONNX_LOGE(
+          "Please pass model data or initialize the session outside of "
+          "this function");
+      SHERPA_ONNX_EXIT(-1);
+    }
 
     GetInputNames(sess_.get(), &input_names_, &input_names_ptr_);
 

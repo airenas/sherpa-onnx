@@ -113,12 +113,10 @@ class OnlineRecognizerParaformerImpl : public OnlineRecognizerImpl {
           "Unsupported decoding method: %s. Support only greedy_search at "
           "present",
           config.decoding_method.c_str());
-      exit(-1);
+      SHERPA_ONNX_EXIT(-1);
     }
 
-    // Paraformer models assume input samples are in the range
-    // [-32768, 32767], so we set normalize_samples to false
-    config_.feat_config.normalize_samples = false;
+    InitFeatConfig();
   }
 
   template <typename Manager>
@@ -136,18 +134,16 @@ class OnlineRecognizerParaformerImpl : public OnlineRecognizerImpl {
     if (config.decoding_method != "greedy_search") {
       SHERPA_ONNX_LOGE("Unsupported decoding method: %s",
                        config.decoding_method.c_str());
-      exit(-1);
+      SHERPA_ONNX_EXIT(-1);
     }
 
-    // Paraformer models assume input samples are in the range
-    // [-32768, 32767], so we set normalize_samples to false
-    config_.feat_config.normalize_samples = false;
+    InitFeatConfig();
   }
 
   OnlineRecognizerParaformerImpl(const OnlineRecognizerParaformerImpl &) =
       delete;
 
-  OnlineRecognizerParaformerImpl operator=(
+  OnlineRecognizerParaformerImpl &operator=(
       const OnlineRecognizerParaformerImpl &) = delete;
 
   std::unique_ptr<OnlineStream> CreateStream() const override {
@@ -229,6 +225,15 @@ class OnlineRecognizerParaformerImpl : public OnlineRecognizerImpl {
   }
 
  private:
+  void InitFeatConfig() {
+    // Paraformer models assume input samples are in the range
+    // [-32768, 32767], so we set normalize_samples to false
+    config_.feat_config.normalize_samples = false;
+    config_.feat_config.window_type = "hamming";
+    config_.feat_config.high_freq = 0;
+    config_.feat_config.snip_edges = true;
+  }
+
   void DecodeStream(OnlineStream *s) const {
     const auto num_processed_frames = s->GetNumProcessedFrames();
     int32_t available_frames = s->NumFramesReady() - num_processed_frames;

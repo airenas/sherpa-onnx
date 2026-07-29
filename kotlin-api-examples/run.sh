@@ -82,10 +82,10 @@ function testZipVoiceTts() {
 }
 
 function testSupertonicTts() {
-  if [ ! -f ./sherpa-onnx-supertonic-tts-int8-2026-03-06/duration_predictor.int8.onnx ]; then
-    curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/sherpa-onnx-supertonic-tts-int8-2026-03-06.tar.bz2
-    tar xvf sherpa-onnx-supertonic-tts-int8-2026-03-06.tar.bz2
-    rm sherpa-onnx-supertonic-tts-int8-2026-03-06.tar.bz2
+  if [ ! -f ./sherpa-onnx-supertonic-3-tts-int8-2026-05-11/duration_predictor.int8.onnx ]; then
+    curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/sherpa-onnx-supertonic-3-tts-int8-2026-05-11.tar.bz2
+    tar xvf sherpa-onnx-supertonic-3-tts-int8-2026-05-11.tar.bz2
+    rm sherpa-onnx-supertonic-3-tts-int8-2026-05-11.tar.bz2
   fi
 
   out_filename=test_supertonic_tts.jar
@@ -169,6 +169,7 @@ function testOnlineAsr() {
     test_online_asr.kt \
     FeatureConfig.kt \
     HomophoneReplacerConfig.kt \
+    QnnConfig.kt \
     OnlineRecognizer.kt \
     OnlineStream.kt \
     WaveReader.kt \
@@ -400,6 +401,7 @@ function testInverseTextNormalizationOnlineAsr() {
     test_itn_online_asr.kt \
     FeatureConfig.kt \
     HomophoneReplacerConfig.kt \
+    QnnConfig.kt \
     OnlineRecognizer.kt \
     OnlineStream.kt \
     WaveReader.kt \
@@ -715,6 +717,50 @@ function testOfflineFunAsrNano() {
   java -Djava.library.path=../build/lib -jar $out_filename
 }
 
+function testOfflineQwen3Asr() {
+  if [ ! -f ./sherpa-onnx-qwen3-asr-0.6B-int8-2026-03-25/encoder.int8.onnx ]; then
+    curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-qwen3-asr-0.6B-int8-2026-03-25.tar.bz2
+    tar xvf sherpa-onnx-qwen3-asr-0.6B-int8-2026-03-25.tar.bz2
+    rm sherpa-onnx-qwen3-asr-0.6B-int8-2026-03-25.tar.bz2
+  fi
+
+  out_filename=test_offline_qwen3_asr.jar
+  kotlinc-jvm -include-runtime -d $out_filename \
+    test_offline_qwen3_asr.kt \
+    FeatureConfig.kt \
+    QnnConfig.kt \
+    HomophoneReplacerConfig.kt \
+    OfflineRecognizer.kt \
+    OfflineStream.kt \
+    WaveReader.kt \
+    faked-asset-manager.kt
+
+  ls -lh $out_filename
+  java -Djava.library.path=../build/lib -jar $out_filename
+}
+
+function testOfflineCohereTranscribe() {
+  if [ ! -f ./sherpa-onnx-cohere-transcribe-14-lang-int8-2026-04-01/encoder.int8.onnx ]; then
+    curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-cohere-transcribe-14-lang-int8-2026-04-01.tar.bz2
+    tar xvf sherpa-onnx-cohere-transcribe-14-lang-int8-2026-04-01.tar.bz2
+    rm sherpa-onnx-cohere-transcribe-14-lang-int8-2026-04-01.tar.bz2
+  fi
+
+  out_filename=test_offline_cohere_transcribe.jar
+  kotlinc-jvm -include-runtime -d $out_filename \
+    test_offline_cohere_transcribe.kt \
+    FeatureConfig.kt \
+    QnnConfig.kt \
+    HomophoneReplacerConfig.kt \
+    OfflineRecognizer.kt \
+    OfflineStream.kt \
+    WaveReader.kt \
+    faked-asset-manager.kt
+
+  ls -lh $out_filename
+  java -Djava.library.path=../build/lib -jar $out_filename
+}
+
 function testOfflineWenetCtc() {
   if [ ! -f sherpa-onnx-wenetspeech-yue-u2pp-conformer-ctc-zh-en-cantonese-int8-2025-09-10/model.int8.onnx ]; then
     curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-wenetspeech-yue-u2pp-conformer-ctc-zh-en-cantonese-int8-2025-09-10.tar.bz2
@@ -738,6 +784,8 @@ function testOfflineWenetCtc() {
 }
 
 testVersion
+testOfflineCohereTranscribe
+testOfflineQwen3Asr
 testOfflineMoonshineAsrV2
 testOfflineFireRedAsrCtc
 testPocketTts

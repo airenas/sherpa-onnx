@@ -107,6 +107,15 @@ set(exported_functions
   SherpaOnnxOnlineSpeechDenoiserRun
   SherpaOnnxOnlineSpeechDenoiserFlush
   SherpaOnnxOnlineSpeechDenoiserReset
+  # punctuation
+  SherpaOnnxCreateOfflinePunctuation
+  SherpaOnnxDestroyOfflinePunctuation
+  SherpaOfflinePunctuationAddPunct
+  SherpaOfflinePunctuationFreeText
+  SherpaOnnxCreateOnlinePunctuation
+  SherpaOnnxDestroyOnlinePunctuation
+  SherpaOnnxOnlinePunctuationAddPunct
+  SherpaOnnxOnlinePunctuationFreeText
   # version
   SherpaOnnxGetGitDate
   SherpaOnnxGetGitSha1
@@ -129,6 +138,8 @@ string(APPEND MY_FLAGS " -sNODERAWFS=1 ")
 string(APPEND MY_FLAGS " -sEXPORTED_RUNTIME_METHODS=['ccall','stringToUTF8','setValue','getValue','lengthBytesUTF8','UTF8ToString','HEAPU8','HEAP16','HEAP32','HEAPU32','HEAPF32','HEAPF64','addFunction','removeFunction'] ")
 
 string(APPEND MY_FLAGS " -sMODULARIZE=1 -sWASM_ASYNC_COMPILATION=0 ")
+string(APPEND MY_FLAGS " -fexceptions ")
+string(APPEND MY_FLAGS " -sPTHREAD_POOL_SIZE=4 ")
 
 message(STATUS "MY_FLAGS: ${MY_FLAGS}")
 
@@ -143,9 +154,10 @@ install(TARGETS sherpa-onnx-wasm-nodejs DESTINATION bin/wasm/nodejs)
 install(
   FILES
   ${CMAKE_SOURCE_DIR}/wasm/asr/sherpa-onnx-asr.js
-  ${CMAKE_SOURCE_DIR}/wasm/tts/sherpa-onnx-tts.js
+  ${CMAKE_SOURCE_DIR}/wasm/tts/sherpa-onnx-tts.node.js
   ${CMAKE_SOURCE_DIR}/wasm/kws/sherpa-onnx-kws.js
   ${CMAKE_SOURCE_DIR}/wasm/vad/sherpa-onnx-vad.js
+  ${CMAKE_SOURCE_DIR}/wasm/nodejs/sherpa-onnx-punctuation.js
   ${CMAKE_SOURCE_DIR}/wasm/speaker-diarization/sherpa-onnx-speaker-diarization.js
   ${CMAKE_SOURCE_DIR}/wasm/speech-enhancement/sherpa-onnx-speech-enhancement.js
   ${CMAKE_SOURCE_DIR}/wasm/nodejs/sherpa-onnx-wave.js

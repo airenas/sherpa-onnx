@@ -29,6 +29,9 @@ set(sources
   normal-data-generator.cc
   offline-canary-model-config.cc
   offline-canary-model.cc
+  offline-cohere-transcribe-greedy-search-decoder.cc
+  offline-cohere-transcribe-model-config.cc
+  offline-cohere-transcribe-model.cc
   offline-ctc-fst-decoder-config.cc
   offline-ctc-fst-decoder.cc
   offline-ctc-greedy-search-decoder.cc
@@ -46,10 +49,10 @@ set(sources
   offline-medasr-ctc-model.cc
   offline-model-config.cc
   offline-moonshine-greedy-search-decoder.cc
-  offline-moonshine-v2-greedy-search-decoder.cc
   offline-moonshine-model-config.cc
   offline-moonshine-model-v2.cc
   offline-moonshine-model.cc
+  offline-moonshine-v2-greedy-search-decoder.cc
   offline-nemo-enc-dec-ctc-model-config.cc
   offline-nemo-enc-dec-ctc-model.cc
   offline-omnilingual-asr-ctc-model-config.cc
@@ -111,10 +114,12 @@ set(sources
   online-t-one-ctc-model.cc
   online-transducer-decoder.cc
   online-transducer-greedy-search-decoder.cc
+  online-transducer-greedy-search-nemo-parakeet-unified-decoder.cc
   online-transducer-greedy-search-nemo-decoder.cc
   online-transducer-model-config.cc
   online-transducer-model.cc
   online-transducer-modified-beam-search-decoder.cc
+  online-transducer-nemo-parakeet-unified-model.cc
   online-transducer-nemo-model.cc
   online-wenet-ctc-model-config.cc
   online-wenet-ctc-model.cc
@@ -189,6 +194,14 @@ list(APPEND sources
   online-punctuation-model-config.cc
   online-punctuation.cc
 )
+# Diacritization
+list(APPEND sources
+  tashkeel-tokenizer.cc
+  offline-catt-model.cc
+  offline-diacritization-model-config.cc
+  offline-diacritization.cc
+  offline-diacritization-impl.cc
+)
 if(SHERPA_ONNX_ENABLE_RKNN)
   list(APPEND sources
     ./rknn/context-blocking-queue-rknn.cc
@@ -243,9 +256,16 @@ endif()
 
 if(SHERPA_ONNX_ENABLE_QNN)
   list(APPEND sources
+    ./qnn/offline-parakeet-ctc-model-qnn.cc
+    ./qnn/offline-parakeet-tdt-model-qnn.cc
     ./qnn/offline-sense-voice-model-qnn.cc
     ./qnn/offline-paraformer-model-qnn.cc
+    ./qnn/offline-whisper-model-qnn.cc
+    ./qnn/offline-moonshine-model-qnn.cc
+    ./qnn/offline-zipformer-transducer-model-qnn.cc
     ./qnn/offline-zipformer-ctc-model-qnn.cc
+    ./qnn/online-nemo-transducer-model-qnn.cc
+    ./qnn/online-zipformer-transducer-model-qnn.cc
     ./qnn/qnn-backend.cc
     ./qnn/qnn-model.cc
     ./qnn/utils.cc
@@ -257,6 +277,10 @@ list(APPEND sources
   offline-funasr-nano-model.cc
   offline-recognizer-funasr-nano-impl.cc
   funasr-nano-tokenizer.cc
+  offline-qwen3-asr-model-config.cc
+  offline-qwen3-asr-model.cc
+  offline-recognizer-qwen3-asr-impl.cc
+  qwen-asr-tokenizer.cc
 )
 
 if(SHERPA_ONNX_ENABLE_TTS)
@@ -317,6 +341,14 @@ if(SHERPA_ONNX_ENABLE_SPEAKER_DIARIZATION)
     offline-speaker-segmentation-model-config.cc
     offline-speaker-segmentation-pyannote-model-config.cc
     offline-speaker-segmentation-pyannote-model.cc
+  )
+endif()
+
+if(APPLE)
+  set_source_files_properties(
+    fast-clustering.cc
+    PROPERTIES
+      COMPILE_OPTIONS "-Wno-unknown-pragmas"
   )
 endif()
 
@@ -475,6 +507,7 @@ if(SHERPA_ONNX_ENABLE_BINARY)
   add_executable(sherpa-onnx-offline sherpa-onnx-offline.cc)
   add_executable(sherpa-onnx-offline-audio-tagging sherpa-onnx-offline-audio-tagging.cc)
   add_executable(sherpa-onnx-offline-denoiser sherpa-onnx-offline-denoiser.cc)
+  add_executable(sherpa-onnx-offline-diacritization sherpa-onnx-offline-diacritization.cc)
   add_executable(sherpa-onnx-offline-language-identification sherpa-onnx-offline-language-identification.cc)
   add_executable(sherpa-onnx-offline-parallel sherpa-onnx-offline-parallel.cc)
   add_executable(sherpa-onnx-offline-punctuation sherpa-onnx-offline-punctuation.cc)
@@ -483,6 +516,9 @@ if(SHERPA_ONNX_ENABLE_BINARY)
   add_executable(sherpa-onnx-online-punctuation sherpa-onnx-online-punctuation.cc)
   add_executable(sherpa-onnx-version sherpa-onnx-version.cc version.cc)
   add_executable(sherpa-onnx-vad sherpa-onnx-vad.cc)
+
+  add_executable(sherpa-onnx-vad-with-offline-asr sherpa-onnx-vad-with-offline-asr.cc)
+  add_executable(sherpa-onnx-vad-with-online-asr sherpa-onnx-vad-with-online-asr.cc)
 
   if(SHERPA_ONNX_ENABLE_TTS)
     add_executable(sherpa-onnx-offline-tts sherpa-onnx-offline-tts.cc)
@@ -498,6 +534,7 @@ if(SHERPA_ONNX_ENABLE_BINARY)
     sherpa-onnx-offline
     sherpa-onnx-offline-audio-tagging
     sherpa-onnx-offline-denoiser
+    sherpa-onnx-offline-diacritization
     sherpa-onnx-offline-language-identification
     sherpa-onnx-offline-parallel
     sherpa-onnx-offline-punctuation
@@ -505,6 +542,9 @@ if(SHERPA_ONNX_ENABLE_BINARY)
     sherpa-onnx-online-denoiser
     sherpa-onnx-online-punctuation
     sherpa-onnx-vad
+    sherpa-onnx-vad-with-offline-asr
+    sherpa-onnx-vad-with-online-asr
+    sherpa-onnx-version
   )
   if(SHERPA_ONNX_ENABLE_TTS)
     list(APPEND main_exes
@@ -522,7 +562,7 @@ if(SHERPA_ONNX_ENABLE_BINARY)
     target_link_libraries(${exe} sherpa-onnx-core)
   endforeach()
 
-  if(NOT WIN32)
+  if(UNIX)
     foreach(exe IN LISTS main_exes)
       target_link_libraries(${exe} "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../lib")
       target_link_libraries(${exe} "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../../../sherpa_onnx/lib")
@@ -546,7 +586,6 @@ if(SHERPA_ONNX_ENABLE_BINARY)
   install(
     TARGETS
       ${main_exes}
-      sherpa-onnx-version
     DESTINATION
       bin
   )
@@ -560,7 +599,6 @@ if(SHERPA_ONNX_HAS_ALSA AND SHERPA_ONNX_ENABLE_BINARY)
   add_executable(sherpa-onnx-keyword-spotter-alsa sherpa-onnx-keyword-spotter-alsa.cc alsa.cc)
   add_executable(sherpa-onnx-vad-alsa sherpa-onnx-vad-alsa.cc alsa.cc)
   add_executable(sherpa-onnx-vad-alsa-offline-asr sherpa-onnx-vad-alsa-offline-asr.cc alsa.cc)
-
 
   if(SHERPA_ONNX_ENABLE_TTS)
     add_executable(sherpa-onnx-offline-tts-play-alsa sherpa-onnx-offline-tts-play-alsa.cc alsa-play.cc)
@@ -597,7 +635,7 @@ if(SHERPA_ONNX_HAS_ALSA AND SHERPA_ONNX_ENABLE_BINARY)
     endif()
   endforeach()
 
-  if(NOT WIN32)
+  if(UNIX)
     foreach(exe IN LISTS exes)
       target_link_libraries(${exe} "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../lib")
       target_link_libraries(${exe} "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../../../sherpa_onnx/lib")
@@ -657,14 +695,6 @@ if(SHERPA_ONNX_ENABLE_PORTAUDIO AND SHERPA_ONNX_ENABLE_BINARY)
     microphone.cc
   )
 
-  add_executable(sherpa-onnx-vad-with-offline-asr
-    sherpa-onnx-vad-with-offline-asr.cc
-  )
-
-  add_executable(sherpa-onnx-vad-with-online-asr
-    sherpa-onnx-vad-with-online-asr.cc
-  )
-
   add_executable(sherpa-onnx-vad-microphone-offline-asr
     sherpa-onnx-vad-microphone-offline-asr.cc
     microphone.cc
@@ -689,9 +719,8 @@ if(SHERPA_ONNX_ENABLE_PORTAUDIO AND SHERPA_ONNX_ENABLE_BINARY)
     sherpa-onnx-vad-microphone
     sherpa-onnx-vad-microphone-simulated-streaming-asr
     sherpa-onnx-vad-microphone-offline-asr
-    sherpa-onnx-vad-with-offline-asr
-    sherpa-onnx-vad-with-online-asr
   )
+
   if(SHERPA_ONNX_ENABLE_TTS)
     list(APPEND exes
       sherpa-onnx-offline-tts-play
@@ -702,7 +731,7 @@ if(SHERPA_ONNX_ENABLE_PORTAUDIO AND SHERPA_ONNX_ENABLE_BINARY)
     target_link_libraries(${exe} portaudio_static sherpa-onnx-core)
   endforeach()
 
-  if(NOT WIN32)
+  if(UNIX)
     foreach(exe IN LISTS exes)
       target_link_libraries(${exe} "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../lib")
       target_link_libraries(${exe} "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../../../sherpa_onnx/lib")
@@ -743,7 +772,7 @@ if(SHERPA_ONNX_ENABLE_WEBSOCKET AND SHERPA_ONNX_ENABLE_BINARY)
   )
   target_link_libraries(sherpa-onnx-online-websocket-client sherpa-onnx-core)
 
-  if(NOT WIN32)
+  if(UNIX)
     target_compile_options(sherpa-onnx-online-websocket-server PRIVATE -Wno-deprecated-declarations)
 
     target_compile_options(sherpa-onnx-online-websocket-client PRIVATE -Wno-deprecated-declarations)
@@ -756,11 +785,11 @@ if(SHERPA_ONNX_ENABLE_WEBSOCKET AND SHERPA_ONNX_ENABLE_BINARY)
   )
   target_link_libraries(sherpa-onnx-offline-websocket-server sherpa-onnx-core)
 
-  if(NOT WIN32)
+  if(UNIX)
     target_compile_options(sherpa-onnx-offline-websocket-server PRIVATE -Wno-deprecated-declarations)
   endif()
 
-  if(NOT WIN32)
+  if(UNIX)
     target_link_libraries(sherpa-onnx-online-websocket-server "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../lib")
     target_link_libraries(sherpa-onnx-online-websocket-server "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../../../sherpa_onnx/lib")
 
@@ -770,7 +799,7 @@ if(SHERPA_ONNX_ENABLE_WEBSOCKET AND SHERPA_ONNX_ENABLE_BINARY)
     target_link_libraries(sherpa-onnx-offline-websocket-server "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../lib")
     target_link_libraries(sherpa-onnx-offline-websocket-server "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../../../sherpa_onnx/lib")
 
-    if(SHERPA_ONNX_ENABLE_PYTHON AND NOT WIN32)
+    if(SHERPA_ONNX_ENABLE_PYTHON)
       target_link_libraries(sherpa-onnx-online-websocket-server "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../lib/python${PYTHON_VERSION}/site-packages/sherpa_onnx/lib")
       target_link_libraries(sherpa-onnx-online-websocket-client "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../lib/python${PYTHON_VERSION}/site-packages/sherpa_onnx/lib")
       target_link_libraries(sherpa-onnx-offline-websocket-server "-Wl,-rpath,${SHERPA_ONNX_RPATH_ORIGIN}/../lib/python${PYTHON_VERSION}/site-packages/sherpa_onnx/lib")
@@ -803,6 +832,7 @@ if(SHERPA_ONNX_ENABLE_TESTS)
     packed-sequence-test.cc
     pad-sequence-test.cc
     regex-lang-test.cc
+    session-test.cc
     slice-test.cc
     stack-test.cc
     text-utils-test.cc
@@ -816,6 +846,7 @@ if(SHERPA_ONNX_ENABLE_TESTS)
     list(APPEND sherpa_onnx_test_srcs
       sentence-piece-tokenizer-test.cc
       piper-phonemize-test.cc
+      offline-tts-supertonic-unicode-processor-test.cc
     )
   endif()
 

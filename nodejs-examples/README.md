@@ -23,6 +23,31 @@ npm i
 In the following, we describe how to use [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 for text-to-speech and speech-to-text.
 
+# Punctuation
+
+In the following, we demonstrate how to add punctuations to text with the
+WebAssembly NodeJS package.
+
+```bash
+curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/punctuation-models/sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12.tar.bz2
+tar xvf sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12.tar.bz2
+rm sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12.tar.bz2
+
+curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/punctuation-models/sherpa-onnx-online-punct-en-2024-08-06.tar.bz2
+tar xvf sherpa-onnx-online-punct-en-2024-08-06.tar.bz2
+rm sherpa-onnx-online-punct-en-2024-08-06.tar.bz2
+
+node ./test-offline-punctuation.js
+node ./test-online-punctuation.js
+```
+
+The punctuation example files are:
+
+```bash
+node ./test-offline-punctuation.js
+node ./test-online-punctuation.js
+```
+
 
 # Speech enhancement
 
@@ -99,6 +124,21 @@ curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/vocoder-mode
 node ./test-offline-tts-zipvoice-zh-en.js
 ```
 
+## ./test-offline-tts-supertonic.js
+
+[./test-offline-tts-supertonic.js](./test-offline-tts-supertonic.js)
+shows how to use SupertonicTTS 3 for text-to-speech.
+It supports 31 languages. The example demonstrates English, Japanese, and German.
+
+You can use the following command to run it:
+```bash
+curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/sherpa-onnx-supertonic-3-tts-int8-2026-05-11.tar.bz2
+tar xf sherpa-onnx-supertonic-3-tts-int8-2026-05-11.tar.bz2
+rm sherpa-onnx-supertonic-3-tts-int8-2026-05-11.tar.bz2
+
+node ./test-offline-tts-supertonic.js
+```
+
 ## ./test-offline-tts-pocket-en.js
 
 [./test-offline-tts-pocket-en.js](./test-offline-tts-pocket-en.js)
@@ -143,6 +183,22 @@ tar xf kokoro-en-v0_19.tar.bz2
 rm kokoro-en-v0_19.tar.bz2
 
 node ./test-offline-tts-kokoro-en.js
+```
+
+## ./test-offline-tts-kokoro-zh-en.js
+
+[./test-offline-tts-kokoro-zh-en.js](./test-offline-tts-kokoro-zh-en.js) shows how to use
+[kokoro-multi-lang-v1_0](https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2)
+for text-to-speech in Chinese and English.
+
+You can use the following command to run it:
+
+```bash
+curl -SL -O https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2
+tar xf kokoro-multi-lang-v1_0.tar.bz2
+rm kokoro-multi-lang-v1_0.tar.bz2
+
+node ./test-offline-tts-kokoro-zh-en.js
 ```
 
 ## ./test-offline-tts-matcha-zh.js
@@ -276,6 +332,39 @@ tar xvf sherpa-onnx-funasr-nano-int8-2025-12-30.tar.bz2
 rm sherpa-onnx-funasr-nano-int8-2025-12-30.tar.bz2
 
 node ./test-offline-funasr-nano.js
+```
+
+## ./test-offline-cohere-transcribe.js
+
+[./test-offline-cohere-transcribe.js](./test-offline-cohere-transcribe.js)
+demonstrates how to decode a file with a Cohere Transcribe model. In the code
+we use
+[sherpa-onnx-cohere-transcribe-14-lang-int8-2026-04-01.tar.bz2](https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-cohere-transcribe-14-lang-int8-2026-04-01.tar.bz2).
+
+You can use the following command to run it:
+
+```bash
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-cohere-transcribe-14-lang-int8-2026-04-01.tar.bz2
+tar xvf sherpa-onnx-cohere-transcribe-14-lang-int8-2026-04-01.tar.bz2
+rm sherpa-onnx-cohere-transcribe-14-lang-int8-2026-04-01.tar.bz2
+
+node ./test-offline-cohere-transcribe.js
+```
+
+## ./test-offline-qwen3-asr.js
+
+[./test-offline-qwen3-asr.js](./test-offline-qwen3-asr.js) demonstrates
+how to decode a file with a Qwen3 ASR model. In the code we use
+[sherpa-onnx-qwen3-asr-0.6B-int8-2026-03-25.tar.bz2](https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-qwen3-asr-0.6B-int8-2026-03-25.tar.bz2).
+
+You can use the following command to run it:
+
+```bash
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-qwen3-asr-0.6B-int8-2026-03-25.tar.bz2
+tar xvf sherpa-onnx-qwen3-asr-0.6B-int8-2026-03-25.tar.bz2
+rm sherpa-onnx-qwen3-asr-0.6B-int8-2026-03-25.tar.bz2
+
+node ./test-offline-qwen3-asr.js
 ```
 
 ## ./test-offline-medasr-ctc.js

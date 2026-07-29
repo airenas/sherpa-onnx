@@ -3,6 +3,7 @@
 // Copyright (c)  2022-2023  Xiaomi Corporation
 
 #include "sherpa-onnx/csrc/symbol-table.h"
+#include "sherpa-onnx/csrc/macros.h"
 
 #include <algorithm>
 #include <cassert>
@@ -151,7 +152,7 @@ std::unordered_map<std::string, int32_t> ReadTokens(
 
 SymbolTable::SymbolTable(const std::string &filename, bool is_file) {
   if (is_file) {
-    std::ifstream is(filename);
+    auto is = OpenInputFile(filename);
     Init(is);
   } else {
     std::istringstream iss(filename);

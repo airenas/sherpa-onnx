@@ -3,6 +3,7 @@
 // Copyright (c)  2022-2023  Xiaomi Corporation
 
 #include "sherpa-onnx/csrc/offline-whisper-model.h"
+#include "sherpa-onnx/csrc/ort-env.h"
 
 #include <algorithm>
 #include <cmath>
@@ -43,7 +44,7 @@ class OfflineWhisperModel::Impl {
  public:
   explicit Impl(const OfflineModelConfig &config)
       : config_(config),
-        env_(ORT_LOGGING_LEVEL_ERROR),
+        env_(CreateOrtEnv()),
         sess_opts_(GetSessionOptions(config)),
         allocator_{},
         cpu_mem_info_(
@@ -62,7 +63,7 @@ class OfflineWhisperModel::Impl {
 
   explicit Impl(const SpokenLanguageIdentificationConfig &config)
       : lid_config_(config),
-        env_(ORT_LOGGING_LEVEL_ERROR),
+        env_(CreateOrtEnv()),
         sess_opts_(GetSessionOptions(config)),
         allocator_{},
         cpu_mem_info_(
@@ -82,7 +83,7 @@ class OfflineWhisperModel::Impl {
   template <typename Manager>
   Impl(Manager *mgr, const OfflineModelConfig &config)
       : config_(config),
-        env_(ORT_LOGGING_LEVEL_ERROR),
+        env_(CreateOrtEnv()),
         sess_opts_(GetSessionOptions(config)),
         allocator_{},
         cpu_mem_info_(
@@ -104,7 +105,7 @@ class OfflineWhisperModel::Impl {
   template <typename Manager>
   Impl(Manager *mgr, const SpokenLanguageIdentificationConfig &config)
       : lid_config_(config),
-        env_(ORT_LOGGING_LEVEL_ERROR),
+        env_(CreateOrtEnv()),
         sess_opts_(GetSessionOptions(config)),
         allocator_{},
         cpu_mem_info_(
@@ -379,7 +380,7 @@ class OfflineWhisperModel::Impl {
         SHERPA_ONNX_LOGE("# lang_id: %d != # lang_code: %d",
                          static_cast<int32_t>(all_language_tokens_.size()),
                          static_cast<int32_t>(all_language_codes_.size()));
-        exit(-1);
+        SHERPA_ONNX_EXIT(-1);
       }
 
       for (int32_t i = 0;

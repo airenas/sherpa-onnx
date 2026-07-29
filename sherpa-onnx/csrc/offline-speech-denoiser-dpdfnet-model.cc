@@ -3,6 +3,7 @@
 // Copyright (c)  2026  Ceva Inc
 
 #include "sherpa-onnx/csrc/offline-speech-denoiser-dpdfnet-model.h"
+#include "sherpa-onnx/csrc/ort-env.h"
 
 #include <algorithm>
 #include <array>
@@ -45,17 +46,18 @@ class OfflineSpeechDenoiserDpdfNetModel::Impl {
  public:
   explicit Impl(const OfflineSpeechDenoiserModelConfig &config)
       : config_(config),
-        env_(ORT_LOGGING_LEVEL_ERROR),
+        env_(CreateOrtEnv()),
         sess_opts_(GetSessionOptions(config)),
         allocator_{} {
-    auto buf = ReadFile(config.dpdfnet.model);
-    Init(buf.data(), buf.size());
+    sess_ = std::make_unique<Ort::Session>(
+        env_, SHERPA_ONNX_TO_ORT_PATH(config.dpdfnet.model), sess_opts_);
+    Init(nullptr, 0);
   }
 
   template <typename Manager>
   Impl(Manager *mgr, const OfflineSpeechDenoiserModelConfig &config)
       : config_(config),
-        env_(ORT_LOGGING_LEVEL_ERROR),
+        env_(CreateOrtEnv()),
         sess_opts_(GetSessionOptions(config)),
         allocator_{} {
     auto buf = ReadFile(mgr, config.dpdfnet.model);
@@ -91,8 +93,15 @@ class OfflineSpeechDenoiserDpdfNetModel::Impl {
 
  private:
   void Init(void *model_data, size_t model_data_length) {
-    sess_ = std::make_unique<Ort::Session>(env_, model_data, model_data_length,
-                                           sess_opts_);
+    if (model_data) {
+      sess_ = std::make_unique<Ort::Session>(
+          env_, model_data, model_data_length, sess_opts_);
+    } else if (!sess_) {
+      SHERPA_ONNX_LOGE(
+          "Please pass model data or initialize the session outside of "
+          "this function");
+      SHERPA_ONNX_EXIT(-1);
+    }
 
     GetInputNames(sess_.get(), &input_names_, &input_names_ptr_);
     GetOutputNames(sess_.get(), &output_names_, &output_names_ptr_);
